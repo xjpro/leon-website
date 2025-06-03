@@ -1,6 +1,83 @@
 import Head from 'next/head'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
+  // State to track the position of the smiley face
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  // State to store window dimensions
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  // State to track the size of the smiley face
+  const [size, setSize] = useState(2); // initial size in rem
+  // State to track if the smiley is growing or shrinking
+  const [isGrowing, setIsGrowing] = useState(true);
+
+  useEffect(() => {
+    // Function to update window size in state
+    const updateWindowSize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    // Set initial window size
+    updateWindowSize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', updateWindowSize);
+
+    // Function to move the smiley face in a random direction
+    const moveSmiley = () => {
+      setPosition(prevPos => {
+        // Calculate new position with larger movement range
+        const newX = prevPos.x + (Math.random() * 60 - 30);
+        const newY = prevPos.y + (Math.random() * 60 - 30);
+
+        // Keep the smiley within the window bounds
+        // Account for the size of the emoji (roughly 50px)
+        const boundedX = Math.max(20, Math.min(windowSize.width - 50, newX));
+        const boundedY = Math.max(20, Math.min(windowSize.height - 50, newY));
+
+        return {
+          x: boundedX,
+          y: boundedY
+        };
+      });
+    };
+
+    // Function to change the size of the smiley face
+    const changeSmileySize = () => {
+      setSize(prevSize => {
+        if (isGrowing) {
+          // If growing and reached max size, start shrinking
+          if (prevSize >= 4) {
+            setIsGrowing(false);
+            return prevSize - 0.5;
+          }
+          return prevSize + 0.5;
+        } else {
+          // If shrinking and reached min size, start growing
+          if (prevSize <= 1) {
+            setIsGrowing(true);
+            return prevSize + 0.5;
+          }
+          return prevSize - 0.5;
+        }
+      });
+    };
+
+    // Set up intervals for movement and size changes
+    const moveIntervalId = setInterval(moveSmiley, 1000);
+    const sizeIntervalId = setInterval(changeSmileySize, 2000);
+
+    // Clean up the intervals and event listener when the component unmounts
+    return () => {
+      clearInterval(moveIntervalId);
+      clearInterval(sizeIntervalId);
+      window.removeEventListener('resize', updateWindowSize);
+    };
+  }, [windowSize.width, windowSize.height, isGrowing]);
+
   return (
     <>
       <Head>
@@ -9,38 +86,45 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-     <div>
+      <div>
+        <h1>hello, i'm leon, this is my page</h1>
 
-       <h1>hello, i'm leon, this is my page</h1>
+        <section>
+          <h2>Things I Like</h2>
+          <ul>
+            <li>Food</li>
+            <li>Snow</li>
+            <li>Winter</li>
+            <li>Robots</li>
+            <li>Building</li>
+            <li>Folding/Cutting</li>
+            <li>Crafts</li>
+            <li>cats</li>
+          </ul>
+        </section>
 
-       <section>
+        <section>
+          <h2>What this nonsense is about:</h2>
+          <p>
+            to be determined
+          </p>
+          <ul>
+            <li></li>
+          </ul>
+        </section>
 
-         <h2>Things I Like</h2>
-         <ul>
-           <li>Food</li>
-           <li>Snow</li>
-           <li>Winter</li>
-           <li>Robots</li>
-           <li>Building</li>
-           <li>Folding/Cutting</li>
-           <li>Crafts</li>
-         </ul>
-
-       </section>
-
-       <section>
-         <h2>What this nonsense is about:</h2>
-
-         <p>
-           to be determined
-         </p>
-
-         <ul>
-           <li></li>
-         </ul>
-
-       </section>
-     </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            fontSize: `${size}rem`,
+            transition: 'all size ease'
+          }}
+        >
+          😃
+        </div>
+      </div>
     </>
   )
 }
